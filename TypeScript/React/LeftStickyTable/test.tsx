@@ -1,5 +1,5 @@
-import type { LeftStickyTableColumn, LeftStickyTableOption } from '~/components/LeftStickyTable';
-import LeftStickyTable from '~/components/LeftStickyTable';
+import { useState } from 'react';
+import { LeftStickyTable, type LeftStickyTableColumn, type LeftStickyTableOption } from '~/components/LeftStickyTable';
 import { Card } from '~/components/ui/card';
 
 type DummyRow = {
@@ -10,11 +10,30 @@ type DummyRow = {
   value3: string;
   code: string;
   name: string;
+  checked?: boolean;
 };
 
 const rows: DummyRow[] = [
-  { id: 0, kind: '通常', value1: 'value1-1', value2: 'test2-1', value3: 'test3-1', code: 'X0000', name: 'X000名称' },
-  { id: 1, kind: '通常', value1: 'value1-2', value2: 'test2-2', value3: 'test3-2', code: 'X0000', name: 'X000名称' },
+  {
+    checked: true,
+    id: 0,
+    kind: '通常',
+    value1: 'value1-1',
+    value2: 'test2-1',
+    value3: 'test3-1',
+    code: 'X0000',
+    name: 'X000名称',
+  },
+  {
+    checked: false,
+    id: 1,
+    kind: '通常',
+    value1: 'value1-2',
+    value2: 'test2-2',
+    value3: 'test3-2',
+    code: 'X0000',
+    name: 'X000名称',
+  },
   {
     id: 2,
     kind: '優先',
@@ -77,22 +96,31 @@ const rows: DummyRow[] = [
   { id: 3, kind: '優先', value1: 'value1-2', value2: 'test2-4', value3: 'test3-4', code: 'X0000', name: 'X000名称' },
   { id: 3, kind: '優先', value1: 'value1-2', value2: 'test2-4', value3: 'test3-4', code: 'X0000', name: 'X000名称' },
 ];
-
-const tableOption: LeftStickyTableOption = {
-  tableSize: {
-    height: 320,
-    width: 1520,
-  },
-  colmunHeight: 54,
-  rowHeight: 36,
-};
-
 const columns: LeftStickyTableColumn<DummyRow>[] = [
   {
     type: 'HasNotChild',
     sticky: true,
     index: 0,
-    label: 'ID',
+    label: (
+      <LeftStickyTable.Cell.Center>
+        <LeftStickyTable.Cell.Checkbox checked={false} />
+      </LeftStickyTable.Cell.Center>
+    ),
+    width: 40,
+    title: (row) => row.id.toString(),
+    elem: (row) => (
+      <LeftStickyTable.Cell.Center>
+        <LeftStickyTable.Cell.Checkbox checked={row.checked!} />
+      </LeftStickyTable.Cell.Center>
+    ),
+    notSortable: true,
+    notResizable: true,
+  },
+  {
+    type: 'HasNotChild',
+    sticky: true,
+    index: 1,
+    label: <LeftStickyTable.Cell.Header>ID</LeftStickyTable.Cell.Header>,
     width: 120,
     title: (row) => row.id.toString(),
     elem: (row) => (
@@ -100,22 +128,20 @@ const columns: LeftStickyTableColumn<DummyRow>[] = [
         <a className="text-blue-600 underline w-full">{row.id}</a>
       </div>
     ),
-    handleHeaderClick: () => alert('id clicked'),
   },
   {
     type: 'HasNotChild',
     sticky: true,
-    index: 1,
+    index: 2,
     width: 120,
-    label: '種別',
+    label: <LeftStickyTable.Cell.Header>種別</LeftStickyTable.Cell.Header>,
     title: (row) => row.kind,
     elem: (row) => (
-      <div className="h-full">
+      <LeftStickyTable.Cell.Center>
         <div className="h-1/2">{row.kind}</div>
         <div className="h-1/2">2row</div>
-      </div>
+      </LeftStickyTable.Cell.Center>
     ),
-    handleHeaderClick: () => alert('kind clicked'),
     // childColumn: [
     //   {
     //     type: 'HasNotChild',
@@ -136,10 +162,9 @@ const columns: LeftStickyTableColumn<DummyRow>[] = [
   },
   {
     type: 'HasChild',
-    index: 2,
+    index: 3,
     label: 'code/name',
     title: (row) => row.value1,
-    handleHeaderClick: () => alert('value1 clicked'),
     childColumn: [
       {
         type: 'HasNotChild',
@@ -147,8 +172,7 @@ const columns: LeftStickyTableColumn<DummyRow>[] = [
         label: 'code',
         width: 80,
         title: (row) => row.code,
-        elem: (row) => <span>{row.code}</span>,
-        handleHeaderClick: () => alert('code clicked'),
+        elem: (row) => <LeftStickyTable.Cell.Left>{row.code}</LeftStickyTable.Cell.Left>,
       },
       {
         type: 'HasNotChild',
@@ -156,8 +180,18 @@ const columns: LeftStickyTableColumn<DummyRow>[] = [
         label: 'name',
         width: 80,
         title: (row) => row.name,
-        elem: (row) => <span>{row.name}</span>,
-        handleHeaderClick: () => alert('name clicked'),
+        elem: (row) => <LeftStickyTable.Cell.Center>{row.name}</LeftStickyTable.Cell.Center>,
+      },
+      {
+        type: 'HasNotChild',
+        index: 2,
+        label: 'other',
+        width: 80,
+        title: (row) => row.name,
+        elem: (row) => <LeftStickyTable.Cell.Right>other</LeftStickyTable.Cell.Right>,
+        handleHeaderClick(sortDirection) {
+          alert(sortDirection);
+        },
       },
       // {
       //   type: 'HasNotChild',
@@ -199,16 +233,15 @@ const columns: LeftStickyTableColumn<DummyRow>[] = [
   },
   {
     type: 'HasNotChild',
-    index: 3,
-    label: '値1',
+    index: 4,
+    label: <LeftStickyTable.Cell.Center>値1</LeftStickyTable.Cell.Center>,
     width: 160,
     title: (row) => row.value1,
     elem: (row) => <span>{row.value1}</span>,
-    handleHeaderClick: () => alert('value1 clicked'),
   },
   {
     type: 'HasNotChild',
-    index: 4,
+    index: 5,
     label: '値2',
     width: 160,
     title: (row) => row.value1,
@@ -217,20 +250,20 @@ const columns: LeftStickyTableColumn<DummyRow>[] = [
         <div>{row.value2}</div>
       </div>
     ),
-    handleHeaderClick: () => alert('value2 clicked'),
+    handleHeaderClick: (sort) => alert(sort),
   },
   {
     type: 'HasNotChild',
-    index: 5,
+    index: 6,
     label: '値3',
     width: 160,
     title: (row) => row.value2,
     elem: (row) => <span>{row.value2}</span>,
-    handleHeaderClick: () => alert('value3 clicked'),
   },
 ];
 
 export default function Test() {
+  const [rowsState, setRowsState] = useState<DummyRow[]>(rows);
   return (
     <div className="felx">
       {/* <Card className="h-1/3 w-[800px] p-4 mt-20 flex items-center">
@@ -239,7 +272,33 @@ export default function Test() {
       </Card> */}
       <Card className="h-1/3 w-[800px] p-4 my-10 flex items-center">
         new
-        <LeftStickyTable tableOption={tableOption} columns={columns} rows={rows} />
+        <button onClick={() => setRowsState(Math.floor(Math.random() * 2) ? rows.slice(0, 3) : [])}>rows change</button>
+        <LeftStickyTable.Table
+          containerSize={{
+            height: 320,
+            width: window.innerWidth * 0.5,
+          }}
+          columns={columns}
+          rows={rowsState}
+          tableOption={{
+            borderColor: '#dcdcdc',
+            column: {
+              defaultSort: {
+                target: 'child',
+                columnIndex: 2,
+                sorted: 'ASC',
+              },
+              height: 36,
+              backgroundColor: '#f5f5f5',
+              textColor: '#0000FF',
+            },
+            row: {
+              height: 24,
+              evenNumberBackgroundColor: '#FFFFFF',
+              oddNumberBackgroundColor: '#F2F2F2',
+            },
+          }}
+        />
       </Card>
     </div>
   );
